@@ -25,12 +25,13 @@ class ChatHandler : TextWebSocketHandler() {
     }
 
     public override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
-        val json = ObjectMapper().readTree(message?.payload)
+        val json = ObjectMapper().readTree(message.payload)
+
         // {type: "join/say", data: "name/msg"}
         when (json.get("type").asText()) {
             "join" -> {
                 val user = User(uids.getAndIncrement(), json.get("data").asText())
-                sessionList.put(session!!, user)
+                sessionList.put(session, user)
                 // tell this user about all other users
                 emit(session, Message("users", sessionList.values))
                 // tell all other users, about this user
