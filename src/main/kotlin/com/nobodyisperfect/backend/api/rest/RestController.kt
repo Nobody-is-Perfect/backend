@@ -4,22 +4,22 @@ import com.nobodyisperfect.backend.exception.GameAlreadyStartedException
 import com.nobodyisperfect.backend.exception.NotFoundException
 import com.nobodyisperfect.backend.exception.TooFewPlayersException
 import com.nobodyisperfect.backend.exception.TooManyPlayersException
-import com.nobodyisperfect.backend.persistence.GameRepository
 import com.nobodyisperfect.backend.model.Game
 import com.nobodyisperfect.backend.model.GameStatus
 import com.nobodyisperfect.backend.model.Player
+import com.nobodyisperfect.backend.persistence.GameRepository
 import com.nobodyisperfect.backend.persistence.PlayerRepository
+import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
-class RestController(private val playerRepository: PlayerRepository, val gameRepository: GameRepository) {
+class RestController(private val playerRepository: PlayerRepository, private val gameRepository: GameRepository, private val simpleMessagingTemplate: SimpMessagingTemplate) {
 
     @GetMapping("/players")
-    fun getPlayers(): MutableCollection<Player>
-    {
-        return this.playerRepository.all();
+    fun getPlayers(): MutableCollection<Player> {
+        return this.playerRepository.all()
     }
 
     @PostMapping("/players")
@@ -43,8 +43,9 @@ class RestController(private val playerRepository: PlayerRepository, val gameRep
 
     @PostMapping("/games/{gameId}/players")
     fun joinGame(@PathVariable gameId: String, @RequestBody player: Player): Game? {
-        val foundGame = this.gameRepository.find(UUID.fromString(gameId)) ?: throw NotFoundException(gameId, "Game");
-        val foundPlayer = this.playerRepository.find(player.id) ?: throw NotFoundException(player.id.toString(), "Player")
+        val foundGame = this.gameRepository.find(UUID.fromString(gameId)) ?: throw NotFoundException(gameId, "Game")
+        val foundPlayer = this.playerRepository.find(player.id)
+                ?: throw NotFoundException(player.id.toString(), "Player")
 
         if (GameStatus.WAITING_FOR_PLAYERS != foundGame.status) {
             throw GameAlreadyStartedException()
@@ -54,14 +55,14 @@ class RestController(private val playerRepository: PlayerRepository, val gameRep
             throw TooManyPlayersException()
         }
 
-        foundGame.players.add(foundPlayer);
+        foundGame.players.add(foundPlayer)
 
         return foundGame
     }
 
     @PostMapping("/games/{gameId}/start")
     fun startGame(@PathVariable gameId: String): Game? {
-        val foundGame = this.gameRepository.find(UUID.fromString(gameId)) ?: throw NotFoundException(gameId, "Game");
+        val foundGame = this.gameRepository.find(UUID.fromString(gameId)) ?: throw NotFoundException(gameId, "Game")
 
         if (GameStatus.WAITING_FOR_PLAYERS != foundGame.status) {
             throw GameAlreadyStartedException()
@@ -72,6 +73,11 @@ class RestController(private val playerRepository: PlayerRepository, val gameRep
         }
 
         foundGame.status = GameStatus.STARTED
+
+        this.simpleMessagingTemplate.convertAndSend(
+                "/topic/games",
+                "{'event': 'gameStarted' }"
+        )
 
         return foundGame
     }

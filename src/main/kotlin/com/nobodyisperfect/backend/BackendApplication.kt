@@ -4,9 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.socket.*
-import org.springframework.web.socket.config.annotation.*
+import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import org.springframework.web.socket.CloseStatus
+import org.springframework.web.socket.TextMessage
+import org.springframework.web.socket.WebSocketSession
+import org.springframework.web.socket.config.annotation.EnableWebSocket
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.handler.TextWebSocketHandler
 import java.util.concurrent.atomic.AtomicLong
 
@@ -61,4 +68,13 @@ class BackendApplication
 
 fun main(args: Array<String>) {
     runApplication<BackendApplication>(*args)
+}
+
+@Bean
+fun corsConfigurer(): WebMvcConfigurer? {
+    return object : WebMvcConfigurer {
+        override fun addCorsMappings(registry: CorsRegistry) {
+            registry.addMapping("/**").allowedOrigins("*").allowedMethods("*");
+        }
+    }
 }

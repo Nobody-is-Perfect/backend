@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat - Websocket Kotlin</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+</head>
+<body>
+
+<script>
+    fetch('http://localhost:8080/games/a488f279-59ef-4e70-be8c-18b14248478a/players', {
+        method: 'POST',
+        body: JSON.stringify({"id": "45c89dd9-ea9a-4bf6-afdb-934fc2781fd6"}),
+        headers: {
+            'Content-type': 'application/json; charset=UTF-8'
+        }
+    }).then(response => {
+
+        fetch('http://localhost:8080/games/a488f279-59ef-4e70-be8c-18b14248478a/players', {
+            method: 'POST',
+            body: JSON.stringify({"id": "4ff09569-a2dd-467f-83bd-bc963830e79c"}),
+            headers: {
+                'Content-type': 'application/json; charset=UTF-8'
+            }
+        }).then(response => {
+
+            fetch('http://localhost:8080/games/a488f279-59ef-4e70-be8c-18b14248478a/players', {
+                method: 'POST',
+                body: JSON.stringify({"id": "1cbfd890-5a10-4fae-96bb-b26b0f5d22e5"}),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8'
+                }
+            }).then(response => {
+
+                const webSocket = new SockJS('/games');
+
+                webSocket.onmessage = function (msg) {
+                    console.log("Received direct message ", msg);
+                };
+                webSocket.onclose = function () {
+                    console.log("Server closed connection");
+                };
+                webSocket.onopen = function () {
+                    console.log("websocket opened");
+
+                    fetch('http://localhost:8080/games/a488f279-59ef-4e70-be8c-18b14248478a/start', {
+                        method: 'POST',
+                        body: JSON.stringify({"id": "1cbfd890-5a10-4fae-96bb-b26b0f5d22e5"}),
+                        headers: {
+                            'Content-type': 'application/json; charset=UTF-8'
+                        }
+                    }).then(response => {
+                        console.log("game started over REST API", response);
+                    });
+                };
+            });
+        });
+    });
+</script>
+</body>
+</html>

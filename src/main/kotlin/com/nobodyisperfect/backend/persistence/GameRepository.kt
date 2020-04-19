@@ -8,6 +8,13 @@ import java.util.*
 class GameRepository {
     val games: MutableMap<UUID, Game> = mutableMapOf();
 
+    init {
+        games[UUID.fromString("a488f279-59ef-4e70-be8c-18b14248478a")] = Game(
+                UUID.fromString("a488f279-59ef-4e70-be8c-18b14248478a"),
+                "myGame"
+        )
+    }
+
     fun all(): MutableCollection<Game> {
         return this.games.values
     }
