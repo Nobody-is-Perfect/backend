@@ -2,12 +2,15 @@ package com.nobodyisperfect.backend
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.sun.org.apache.xerces.internal.parsers.SecurityConfiguration
+import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
@@ -15,6 +18,10 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.handler.TextWebSocketHandler
+import java.io.IOException
+import java.security.InvalidAlgorithmParameterException
+import java.security.NoSuchAlgorithmException
+import java.security.spec.InvalidKeySpecException
 import java.util.concurrent.atomic.AtomicLong
 
 
@@ -64,17 +71,21 @@ class WSConfig : WebSocketConfigurer {
 
 
 @SpringBootApplication
-class BackendApplication
+class BackendApplication {
 
-fun main(args: Array<String>) {
-    runApplication<BackendApplication>(*args)
-}
+    @Bean
+    fun corsConfigurer(): WebMvcConfigurer {
+        return object : WebMvcConfigurerAdapter() {
+            override fun addCorsMappings(registry: CorsRegistry) {
+                registry.addMapping("/**").allowedOrigins("*").allowedMethods("*")
+            }
+        }
+    }
 
-@Bean
-fun corsConfigurer(): WebMvcConfigurer? {
-    return object : WebMvcConfigurer {
-        override fun addCorsMappings(registry: CorsRegistry) {
-            registry.addMapping("/**").allowedOrigins("*").allowedMethods("*");
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            runApplication<BackendApplication>(*args)
         }
     }
 }
