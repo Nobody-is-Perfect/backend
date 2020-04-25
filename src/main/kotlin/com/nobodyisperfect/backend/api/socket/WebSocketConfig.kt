@@ -12,11 +12,13 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 class WebSocketConfig(): WebSocketMessageBrokerConfigurer {
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
-        registry.addEndpoint("/games").withSockJS()
+        registry.addEndpoint("/gs-guide-websocket").withSockJS()
     }
 
     override fun configureMessageBroker(config: MessageBrokerRegistry) {
+        // the prefix to which messages should be sent to from the client
+        // so that they get mapped to the socket controller annotated with @MessageMapping
         config.setApplicationDestinationPrefixes("/app")
-        config.enableSimpleBroker("/topic", "/queue")
+        config.enableSimpleBroker("/topic")
     }
 }

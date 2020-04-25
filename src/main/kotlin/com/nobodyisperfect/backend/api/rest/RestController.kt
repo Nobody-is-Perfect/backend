@@ -75,7 +75,7 @@ class RestController(private val playerRepository: PlayerRepository, private val
         foundGame.status = GameStatus.STARTED
 
         this.simpleMessagingTemplate.convertAndSend(
-                "/topic/games",
+                "/topic/games/$gameId",
                 "{'event': 'gameStarted' }"
         )
 
